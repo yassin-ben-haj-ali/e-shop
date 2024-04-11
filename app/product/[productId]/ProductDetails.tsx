@@ -4,6 +4,7 @@ import { Rating } from "@mui/material";
 import React, { useCallback, useState } from "react";
 import SetColor from "./SetColor";
 import SetQuantity from "./SetQuantity";
+import Button from "@/app/components/Button";
 
 interface ProductDetailsProps {
     product: any
@@ -49,7 +50,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
         }
 
         setCartProduct((prev) => {
-            return { ...prev, quantity: prev.quantity+1 }
+            return { ...prev, quantity: prev.quantity + 1 }
         })
 
     }, [cartProduct]);
@@ -61,7 +62,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
         }
 
         setCartProduct((prev) => {
-            return { ...prev, quantity: prev.quantity-1 }
+            return { ...prev, quantity: prev.quantity - 1 }
         })
 
     }, [cartProduct]);
@@ -113,7 +114,12 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
 
             />
             <Horizontal />
-            <div>add to cart</div>
+            <div className="max-w-[300px]">
+                <Button
+                    label='add to cart'
+                    onClick={() => { }}
+                />
+            </div>
         </div>
     </div>;
 }
