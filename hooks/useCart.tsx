@@ -1,7 +1,8 @@
+import { CartProductType } from "@/app/product/[productId]/ProductDetails";
 import { createContext, useContext, useState } from "react";
 
 type CartContextType = {
-    cartTotalQty: number
+    cartTotalQty: number,
 }
 
 
