@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/app/actions/getCurrentUser";
 import { CartProductType } from "@/app/product/[productId]/ProductDetails";
+import client from "@/libs/prismadb";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -40,7 +41,36 @@ export async function POST(request: Request) {
     }
 
     if (payment_intent_id) {
-        //update the order
+        const current_intent = await stripe.paymentIntents.retrieve(payment_intent_id);
+        if (current_intent) {
+            const updated_intent = await stripe.paymentIntents.update(payment_intent_id, {
+                amount: total
+            })
+            //update the order
+            const [existing_order, update_order] = await Promise.all([
+                client.order.findFirst({
+                    where: {
+                        paymentIntentId: payment_intent_id
+                    },
+                }),
+                client.order.update({
+                    where: {
+                        paymentIntentId: payment_intent_id
+                    },
+                    data: {
+                        amount: total,
+                        products: items
+                    }
+                })
+            ])
+
+            if (!existing_order) {
+                return NextResponse.json({ error: "Invalid Payment Intent" }, { status: 400 })
+            }
+
+            return NextResponse.json({ updated_intent })
+        }
+
     } else {
         //create the intent
         const paymentIntent = await stripe.paymentIntents.create({
@@ -50,7 +80,11 @@ export async function POST(request: Request) {
         })
 
         //create the order
-
+        orderData.paymentIntentId = paymentIntent.id
+        await client.order.create({
+            data: orderData
+        })
+        return NextResponse.json({ paymentIntent })
     }
 
 }
