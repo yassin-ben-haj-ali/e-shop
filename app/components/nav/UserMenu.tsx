@@ -32,6 +32,14 @@ const UserMenu = () => {
                         signOut()
                     }}>logout</MenuItem>
                 </div>
+                <div>
+                    <Link href="/login">
+                        <MenuItem onClick={toggleOpen}>Login</MenuItem>
+                    </Link>
+                    <Link href="/register">
+                        <MenuItem onClick={toggleOpen}>Register</MenuItem>
+                    </Link>
+                </div>
             </div>}
         </div>
         {isOpen ? <BackDrop onClick={toggleOpen} /> : null}
