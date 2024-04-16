@@ -26,8 +26,8 @@ export async function getCurrentUser() {
 
         return {
             ...currentUser,
-            createdAt: currentUser?.createdAt?.toISOString(),
-            updatedAt: currentUser?.updatedAt?.toISOString(),
+            createdAt: currentUser.createdAt.toISOString(),
+            updatedAt: currentUser.updatedAt.toISOString(),
             emailVerified: currentUser?.emailVerified?.toString() || null
         }
 

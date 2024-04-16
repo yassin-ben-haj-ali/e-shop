@@ -7,8 +7,14 @@ import Link from "next/link";
 import MenuItem from "./MenuItem";
 import { signOut } from "next-auth/react"
 import BackDrop from "./BackDrop";
+import { safeUser } from "@/types";
 
-const UserMenu = () => {
+
+interface UserMenuProps {
+    currentUser: safeUser | null
+}
+
+const UserMenu: React.FC<UserMenuProps> = ({ currentUser }) => {
     const [isOpen, setIsOpen] = useState(false);
     const toggleOpen = useCallback(() => {
         setIsOpen((prev) => !prev)
@@ -20,26 +26,27 @@ const UserMenu = () => {
                 <AiFillCaretDown />
             </div>
             {isOpen && <div className="absolute rounded-md shadow-md w-[170px] bg-white overflow-hidden top-12 right-0 text-sm flex flex-col cursor-pointer">
-                <div>
+                {currentUser ? <div>
                     <Link href="/orders">
                         <MenuItem onClick={toggleOpen}>Your orders</MenuItem>
                     </Link>
                     <Link href="/admin">
                         <MenuItem onClick={toggleOpen}>Admin dashboard</MenuItem>
                     </Link>
+                    <hr />
                     <MenuItem onClick={() => {
                         toggleOpen();
                         signOut()
                     }}>logout</MenuItem>
-                </div>
-                <div>
+                </div> : <div>
                     <Link href="/login">
                         <MenuItem onClick={toggleOpen}>Login</MenuItem>
                     </Link>
                     <Link href="/register">
                         <MenuItem onClick={toggleOpen}>Register</MenuItem>
                     </Link>
-                </div>
+                </div>}
+
             </div>}
         </div>
         {isOpen ? <BackDrop onClick={toggleOpen} /> : null}
