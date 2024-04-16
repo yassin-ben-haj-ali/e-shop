@@ -57,7 +57,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ currentUser }) => {
     }
     return (<>
         <Heading title="Sign in for E-Shop" />
-        <Button outline label="Continue with Google" icon={AiOutlineGoogle} onClick={() => { }} />
+        <Button outline label="Continue with Google" icon={AiOutlineGoogle} onClick={() => { signIn("google") }} />
         <hr className="bg-slate-300 w-full h-px" />
         <Input
             id="email"
