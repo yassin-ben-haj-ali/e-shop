@@ -69,7 +69,7 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: "Invalid Payment Intent" }, { status: 400 })
             }
 
-            return NextResponse.json({ updated_intent })
+            return NextResponse.json({ paymentIntent:updated_intent })
         }
 
     } else {
