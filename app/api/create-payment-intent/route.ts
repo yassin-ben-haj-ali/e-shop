@@ -14,7 +14,8 @@ const calculateOrderAmount = (items: CartProductType[]) => {
         const itemTotal = item.quantity * item.price;
         return acc + itemTotal
     }, 0)
-    return totalPrice;
+    const price = Math.floor(totalPrice);
+    return price;
 }
 
 
