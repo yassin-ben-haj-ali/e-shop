@@ -1,5 +1,6 @@
 "use client"
 import Heading from "@/app/components/Heading";
+import CustomCheckBox from "@/app/components/inputs/CustomCheckBox";
 import Input from "@/app/components/inputs/Input";
 import TextArea from "@/app/components/inputs/TextArea";
 import { useState } from "react";
@@ -26,6 +27,7 @@ const AddProductsForm = () => {
         <Input id="price" label="Price" type="number" disabled={loading} register={register} errors={errors} required />
         <Input id="brand" label="Brand" type="text" disabled={loading} register={register} errors={errors} required />
         <TextArea id="description" label="description" disabled={loading} register={register} errors={errors} required />
+        <CustomCheckBox id="inStock" register={register} label="This Product Is In Stock" />
     </>);
 }
 
