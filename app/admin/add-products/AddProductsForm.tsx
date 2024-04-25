@@ -3,10 +3,15 @@ import Heading from "@/app/components/Heading";
 import CategoryInput from "@/app/components/inputs/CategoryInput";
 import CustomCheckBox from "@/app/components/inputs/CustomCheckBox";
 import Input from "@/app/components/inputs/Input";
+import SelectColor from "@/app/components/inputs/SelectColor";
 import TextArea from "@/app/components/inputs/TextArea";
 import { categories } from "@/utils/categories";
-import { useState } from "react";
-import { FieldValues, useForm } from "react-hook-form";
+import { colors } from "@/utils/colors";
+import { useCallback, useEffect, useState } from "react";
+import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import { firbaseApp } from "@/libs/firebase";
 
 export type ImageType = {
     color: string,
@@ -23,6 +28,8 @@ export type uploadedImage = {
 const AddProductsForm = () => {
 
     const [loading, setLoading] = useState(false);
+    const [images, setImages] = useState<ImageType[] | null>()
+    const [isProductCreated, setIsProductCreated] = useState(false);
     const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<FieldValues>({
         defaultValues: {
             name: "",
@@ -37,13 +44,111 @@ const AddProductsForm = () => {
 
     const category = watch("category");
 
-    const setCustomValue = (id: string, value: string) => {
+
+    useEffect(() => {
+        setCustomValue("images", images)
+    }, [images])
+
+    useEffect(() => {
+        if (isProductCreated) {
+            reset();
+            setImages(null);
+            setIsProductCreated(false);
+        }
+    }, [])
+
+
+    const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+        setLoading(true);
+        let uploadedImages: uploadedImage[] = []
+        if (!data.category) {
+            setLoading(false);
+            return toast.error("Category is not selected")
+        }
+        if (!data.images || data.images.length === 0) {
+            setLoading(false);
+            return toast.error("No selected image!")
+        }
+        const handleImageUploads = async () => {
+            toast("Creating product, please wait...")
+            try {
+                for (const item of data.images) {
+                    if (item.image) {
+                        const fileName = new Date().getTime() + "-" + item.image.name;
+                        const storage = getStorage(firbaseApp);
+                        const storageRef = ref(storage, `Products/${fileName}`);
+                        const uploadTask = uploadBytesResumable(storageRef, item.image)
+
+                        await new Promise<void>((resolve, reject) => {
+                            uploadTask.on('state_changed',
+                                (snapshot) => {
+                                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                    console.log('Upload is ' + progress + '% done');
+                                    switch (snapshot.state) {
+                                        case 'paused':
+                                            console.log('Upload is paused');
+                                            break;
+                                        case 'running':
+                                            console.log('Upload is running');
+                                            break;
+                                    }
+                                },
+                                (error) => {
+                                    reject(error);
+                                },
+                                () => {
+                                    // Upload completed successfully, now we can get the download URL
+                                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                                        uploadedImages.push({ ...item, image: downloadURL })
+                                        console.log('File available at', downloadURL);
+                                        resolve();
+                                    }).catch((error) => {
+                                        reject(error);
+                                    })
+                                }
+                            );
+                        })
+                    }
+                }
+            } catch (err) {
+                setLoading(false);
+                toast.error("Error handling image uploads")
+            }
+        }
+
+        await handleImageUploads();
+        const productData = { ...data, images: uploadedImages };
+        console.log("productData", productData)
+
+    }
+
+    const setCustomValue = (id: string, value: any) => {
         setValue(id, value, {
             shouldValidate: true,
             shouldDirty: true,
             shouldTouch: true,
         })
     }
+
+    const addImageToState = useCallback((value: ImageType) => {
+        setImages((prev) => {
+            if (!prev) {
+                return [value]
+            }
+            return [...prev, value]
+        })
+    }, [])
+
+    const removeImageFromState = useCallback((value: ImageType) => {
+        setImages((prev) => {
+            if (prev) {
+                const filteredImages = prev.filter((item) => item.color !== value.color)
+                return filteredImages
+            }
+            return prev;
+        })
+    }, [])
 
     return (<>
         <Heading title="Add Product Form" center />
@@ -71,7 +176,19 @@ const AddProductsForm = () => {
                 <div className="font-bold">Select the available product colors and upload their images.</div>
                 <div className="text-sm">You must upload an image for each of the color selected otherwise your color selection will be ignored.</div>
             </div>
-            <div></div>
+            <div className="grid grid-cols-2 gap-3">
+                {colors.map((item, index) => {
+                    return (
+                        <SelectColor
+                            key={index}
+                            item={item}
+                            addImageToState={addImageToState}
+                            removeImageFromState={removeImageFromState}
+                            isProductCreated={isProductCreated}
+                        />
+                    )
+                })}
+            </div>
         </div>
     </>);
 }
