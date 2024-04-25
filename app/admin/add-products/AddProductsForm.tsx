@@ -8,6 +8,18 @@ import { categories } from "@/utils/categories";
 import { useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 
+export type ImageType = {
+    color: string,
+    colorCode: string,
+    image: File | null
+}
+
+export type uploadedImage = {
+    color: string,
+    colorCode: string,
+    file: string
+}
+
 const AddProductsForm = () => {
 
     const [loading, setLoading] = useState(false);
@@ -53,6 +65,13 @@ const AddProductsForm = () => {
                     </div>
                 })}
             </div>
+        </div>
+        <div className="w-full flex flex-col flex-wrap gap-4">
+            <div>
+                <div className="font-bold">Select the available product colors and upload their images.</div>
+                <div className="text-sm">You must upload an image for each of the color selected otherwise your color selection will be ignored.</div>
+            </div>
+            <div></div>
         </div>
     </>);
 }
