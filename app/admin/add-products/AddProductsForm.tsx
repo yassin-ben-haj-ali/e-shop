@@ -12,6 +12,9 @@ import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import { firbaseApp } from "@/libs/firebase";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import Button from "@/app/components/Button";
 
 export type ImageType = {
     color: string,
@@ -26,7 +29,7 @@ export type uploadedImage = {
 }
 
 const AddProductsForm = () => {
-
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [images, setImages] = useState<ImageType[] | null>()
     const [isProductCreated, setIsProductCreated] = useState(false);
@@ -119,7 +122,15 @@ const AddProductsForm = () => {
 
         await handleImageUploads();
         const productData = { ...data, images: uploadedImages };
-        console.log("productData", productData)
+        axios.post("/api/product", productData).then(() => {
+            setIsProductCreated(true);
+            router.refresh();
+
+        }).catch((err) => {
+            toast.error("Something  went wrong when saving product to db")
+        }).finally(() => {
+            setLoading(false);
+        })
 
     }
 
@@ -190,6 +201,7 @@ const AddProductsForm = () => {
                 })}
             </div>
         </div>
+        <Button label={loading ? "Loading..." : "Add Product"} onClick={handleSubmit(onSubmit)} />
     </>);
 }
 
