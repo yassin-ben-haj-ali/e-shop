@@ -5,6 +5,8 @@ import React from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
 import { formatPrice } from "@/utils/formatPrice";
 import Heading from "@/app/components/Heading";
+import Status from "@/app/components/Status";
+import { MdClose, MdDone } from "react-icons/md";
 
 interface ManageProductsClientProps {
     products: Product[];
@@ -40,7 +42,7 @@ const ManageProductsClient: React.FC<ManageProductsClientProps> = ({ products })
         { field: "brand", headerName: "Brand", width: 100 },
         {
             field: "inStock", headerName: "inStock", width: 120, renderCell: (params) => {
-                return (<div>{params.row.inStock === true ? "in Stock" : "out of stock"}</div>)
+                return (<div>{params.row.inStock === true ? <Status text="in Stock" icon={MdDone} bg="bg-teal-200" color="text-teal-700" /> : <Status text="out of stock" icon={MdClose} bg="bg-rose-200" color="text-rose-700" />}</div>)
             }
         },
         {
