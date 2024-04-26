@@ -11,6 +11,10 @@ export default async function getProducts(params: IProductParams) {
 
         const { category, searchTerm } = params;
         let searchString = searchTerm;
+        if (!searchTerm) {
+            searchString = '';
+        }
+
         let query: any = {}
 
         if (category) {
@@ -22,11 +26,11 @@ export default async function getProducts(params: IProductParams) {
                 OR: [
                     {
                         name: {
-                            contain: searchString,
+                            contains: searchString,
                             mode: "insensitive"
                         },
                         description: {
-                            contain: searchString,
+                            contains: searchString,
                             mode: "insensitive"
                         }
 
