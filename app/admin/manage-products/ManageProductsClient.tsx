@@ -1,19 +1,29 @@
 "use client";
 
 import { Product } from "@prisma/client";
-import React from "react";
+import React, { useCallback } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
 import { formatPrice } from "@/utils/formatPrice";
 import Heading from "@/app/components/Heading";
 import Status from "@/app/components/Status";
 import { MdCached, MdClose, MdDelete, MdDone, MdRemoveRedEye } from "react-icons/md";
 import ActionBtn from "@/app/components/ActionBtn";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { ref, getStorage, deleteObject } from "firebase/storage";
+import { firbaseApp } from "@/libs/firebase";
 
 interface ManageProductsClientProps {
     products: Product[];
 }
 
 const ManageProductsClient: React.FC<ManageProductsClientProps> = ({ products }) => {
+
+
+    const router = useRouter();
+    const storage = getStorage(firbaseApp);
+
     let rows: any = [];
 
     if (products) {
@@ -49,17 +59,50 @@ const ManageProductsClient: React.FC<ManageProductsClientProps> = ({ products })
         {
             field: "action", headerName: "Actions", width: 200, renderCell: (params) => {
                 return (<div className="flex justify-between gap-4 w-full">
-                    <ActionBtn icon={MdCached} onClick={() => { }} />
-                    <ActionBtn icon={MdDelete} onClick={() => { }} />
+                    <ActionBtn icon={MdCached} onClick={() => { handleToggleStock(params.row.id, params.row.inStock) }} />
+                    <ActionBtn icon={MdDelete} onClick={() => { handleDelete(params.row.id, params.row.images) }} />
                     <ActionBtn icon={MdRemoveRedEye} onClick={() => { }} />
                 </div>)
             }
         },
-
-
-
     ]
 
+    const handleDelete = useCallback(async (id: string, images: any[]) => {
+        toast("Deleting Product, Please Wait!");
+        const handleImageDelete = async () => {
+            try {
+                for (const item of images) {
+                    if (item.image) {
+                        const imageRef = ref(storage, item.image)
+                        await deleteObject(imageRef);
+
+                    }
+                }
+            } catch (err) {
+
+            }
+        }
+        await handleImageDelete();
+        axios.delete(`/api/product/${id}`).then((res) => {
+            toast.success("Product Deleted");
+            router.refresh();
+        }).catch(() => {
+            toast.error("failed to delete product");
+        })
+
+    }, [])
+
+    const handleToggleStock = useCallback((id: string, inStock: boolean) => {
+        axios.put("/api/product", {
+            id,
+            inStock: !inStock
+        }).then((res) => {
+            toast.success("Product status changed");
+            router.refresh();
+        }).catch((err) => {
+            toast.error("Oops! Something went wrong")
+        })
+    }, [])
     return (<div className="max-w-[1150px] m-auto text-xl">
         <div className="mb-4 mt-8">
             <Heading title="Manage Products" center />
@@ -76,6 +119,7 @@ const ManageProductsClient: React.FC<ManageProductsClientProps> = ({ products })
                 }}
                 pageSizeOptions={[5, 10]}
                 checkboxSelection
+                disableRowSelectionOnClick
             />
         </div>
 
