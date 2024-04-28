@@ -80,7 +80,7 @@ const ManageOrdersClient: React.FC<ManageOrdersClientProps> = ({ orders }) => {
                 return (<div className="flex justify-between gap-4 w-full">
                     <ActionBtn icon={MdDeliveryDining} onClick={() => { handleDispatch(params.row.id) }} />
                     <ActionBtn icon={MdDone} onClick={() => { handleDeliver(params.row.id) }} />
-                    <ActionBtn icon={MdRemoveRedEye} onClick={() => { }} />
+                    <ActionBtn icon={MdRemoveRedEye} onClick={() => { router.push(`/order/${params.row.id}`)}} />
                 </div>)
             }
         },
